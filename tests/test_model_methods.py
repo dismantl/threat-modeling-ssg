@@ -501,3 +501,52 @@ def test_entity_lists_are_keyed() -> None:
         {"threats": [], "components": {}, "scenarios": [], "properties": {}}
     )
     assert old.mitigations == {} and old.threat_actors == {}
+
+
+def test_old_capec_severity_maps_onto_impact() -> None:
+    """Reports written before `impact` existed carry CAPEC's five-level severity."""
+    assert Threat.model_validate(
+        {"SID": "T", "severity": "Very High"}
+    ).impact_label == ("High")
+    assert Threat.model_validate({"SID": "T", "severity": "Very Low"}).impact_label == (
+        "Low"
+    )
+    assert Threat(SID="T", impact="Very High", likelihood="Low").risk_score == 6
+
+
+def test_further_mitigations_count_per_component(model_factory) -> None:
+    """A mitigation proposed for a threat still shows which components lack it."""
+    encrypt = Mitigation(
+        id="M-ENCRYPT", title="Encrypt", property="encrypts_secrets", status="proposed"
+    )
+    model = model_factory(
+        threats={
+            "T1": Threat(
+                SID="T1",
+                mapping=ThreatMapping(
+                    requirements=["stores_secrets"],
+                    further_mitigations=["M-ENCRYPT"],
+                ),
+            ),
+        },
+        components={
+            "A": Component(
+                name="A", component_class="Process", properties={"stores_secrets": True}
+            ),
+            "B": Component(name="B", component_class="Process"),
+        },
+        scenarios=[
+            Scenario(
+                name="S1",
+                findings=[Finding(target="A", threat_id="T1")],
+                flows=[FLOW_A_B],
+            )
+        ],
+        mitigations={"M-ENCRYPT": encrypt},
+    )
+    (state,) = model.property_mitigation_state("encrypts_secrets")
+    assert state["threats"] == []
+    assert [tid for tid, _ in state["proposed_for"]] == ["T1"]
+    assert [name for name, _ in state["missing_on"]] == ["A"]
+    potential = model.component_potential_mitigations(model.components["A"], {"T1"})
+    assert [m.id for m in potential] == ["M-ENCRYPT"]
