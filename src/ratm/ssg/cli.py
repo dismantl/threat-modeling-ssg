@@ -4,7 +4,7 @@ import tomllib
 from pathlib import Path
 
 import click
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from . import views  # noqa: F401 — registers @view decorators
 from .models import SiteConfig, ThreatModel
@@ -38,7 +38,12 @@ def copy_assets(assets_dst):
 
 
 def build_env() -> Environment:
-    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
+    # Diagram sources are escaped too: diagrams.js reads them back through
+    # textContent, which decodes the entities.
+    env = Environment(
+        loader=FileSystemLoader(str(TEMPLATES_DIR)),
+        autoescape=select_autoescape(["html"]),
+    )
     env.filters["basename"] = lambda p: Path(p).name
     env.filters["slugify"] = slugify
     env.filters["display"] = display_token
