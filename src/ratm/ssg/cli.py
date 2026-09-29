@@ -8,7 +8,15 @@ from jinja2 import Environment, FileSystemLoader
 
 from . import views  # noqa: F401 — registers @view decorators
 from .models import SiteConfig, ThreatModel
-from .utils import display_token, property_href, render_views, slugify
+from .utils import (
+    display_token,
+    mitigation_href,
+    property_href,
+    render_views,
+    slugify,
+    status_slug,
+    threat_actor_href,
+)
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
@@ -29,6 +37,27 @@ def copy_assets(assets_dst):
     shutil.copytree(assets_src, assets_dst)
 
 
+def build_env() -> Environment:
+    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
+    env.filters["basename"] = lambda p: Path(p).name
+    env.filters["slugify"] = slugify
+    env.filters["display"] = display_token
+    env.filters["property_href"] = property_href
+    env.filters["mitigation_href"] = mitigation_href
+    env.filters["threat_actor_href"] = threat_actor_href
+    env.filters["status_slug"] = status_slug
+
+    # FIXME: These are a bit hackish, but work.
+    env.filters["sort_by_class"] = lambda d: sorted(
+        d.items(), key=lambda x: x[1].component_class
+    )
+    env.filters["implemented"] = lambda d: sorted(
+        ((k, v) for k, v in d.items() if v is not False),
+        key=lambda item: 0 if not isinstance(item[1], bool) else 1,
+    )
+    return env
+
+
 @click.command()
 @click.option(
     "-o",
@@ -44,20 +73,7 @@ def main(output_dir):
 
     model = ThreatModel.load_report(sys.stdin)
 
-    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
-    env.filters["basename"] = lambda p: Path(p).name
-    env.filters["slugify"] = slugify
-    env.filters["display"] = display_token
-    env.filters["property_href"] = property_href
-
-    # FIXME: These are a bit hackish, but work.
-    env.filters["sort_by_class"] = lambda d: sorted(
-        d.items(), key=lambda x: x[1].component_class
-    )
-    env.filters["implemented"] = lambda d: sorted(
-        ((k, v) for k, v in d.items() if v is not False),
-        key=lambda item: 0 if not isinstance(item[1], bool) else 1,
-    )
+    env = build_env()
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
