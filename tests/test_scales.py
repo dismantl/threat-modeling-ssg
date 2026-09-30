@@ -59,6 +59,13 @@ def test_every_possible_score_has_a_band() -> None:
     assert all(scales.risk_band(s) for s in scores)
 
 
+def test_status_order_covers_every_status() -> None:
+    assert sorted(scales.THREAT_STATUS_ORDER) == sorted(scales.THREAT_STATUSES)
+    assert scales.THREAT_STATUS_ORDER[: len(scales.OPEN_STATUSES)] == (
+        scales.OPEN_STATUSES
+    )
+
+
 def test_open_statuses() -> None:
     assert scales.OPEN_STATUSES == ("unmanaged", "partially mitigated")
     assert set(scales.OPEN_STATUSES) <= set(scales.THREAT_STATUSES)
