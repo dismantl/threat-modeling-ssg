@@ -14,11 +14,10 @@ def tm() -> Ratm:
         ("loads_resources", "Loads resources", (), tuple),
         ("verifies_resources", "Verifies resources", (), tuple),
     )
-    tm.Mitigation("M-SANITIZE", title="Sanitize input", property="sanitizes_input")
+    tm.Mitigation("M-SANITIZE", title="Sanitize input")
     tm.Mitigation(
         "M-VERIFY",
         title="Verify resources",
-        property="verifies_resources.deps",
         test="tests/test_deps.py",
         status="proposed",
     )
@@ -40,23 +39,16 @@ def make_scenario(tm: Ratm) -> Scenario:
 
 
 def test_mitigation_to_dict_and_has_test() -> None:
-    mit = Mitigation("M1", title="T", property="verifies_resources.deps", test="t.py")
+    mit = Mitigation("M1", title="T", test="t.py")
     assert mit.has_test is True
-    assert mit.property_names == ["verifies_resources"]
     assert mit.to_dict() == {
         "id": "M1",
         "title": "T",
         "description": "",
         "status": "implemented",
         "test": "t.py",
-        "property": "verifies_resources.deps",
     }
     assert Mitigation("M2", title="T").has_test is False
-    assert Mitigation("M2", title="T").property_names == []
-    assert Mitigation("M3", title="T", property="a != b").property_names == ["a", "b"]
-    assert Mitigation("M4", title="T", property="!is_exposed").property_names == [
-        "is_exposed"
-    ]
 
 
 def test_threat_actor_to_dict() -> None:
@@ -219,12 +211,6 @@ def test_report_validates_threats(tm: Ratm, kwargs, message) -> None:
 def test_report_validates_mitigation_status(tm: Ratm) -> None:
     tm.Mitigation("M-BAD", title="Bad", status="done")
     with pytest.raises(ValueError, match="M-BAD.*status.*done"):
-        tm.Report([make_scenario(tm)]).generate()
-
-
-def test_report_validates_mitigation_property(tm: Ratm) -> None:
-    tm.Mitigation("M-BAD", title="Bad", property="no_such_prop.item")
-    with pytest.raises(ValueError, match="M-BAD.*property.*no_such_prop"):
         tm.Report([make_scenario(tm)]).generate()
 
 
