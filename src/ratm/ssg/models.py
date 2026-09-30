@@ -1,4 +1,5 @@
 from collections import Counter, defaultdict
+from collections.abc import Iterable
 from typing import Any, TextIO
 
 from pydantic import (
@@ -374,7 +375,7 @@ class ThreatModel(BaseModel):
         ]
 
     def component_potential_mitigations(
-        self, component: Component, threat_ids: set[str]
+        self, component: Component, threat_ids: Iterable[str]
     ) -> list[Mitigation]:
         """Return the mitigations of those threats that the component lacks.
 
