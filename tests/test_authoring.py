@@ -1,5 +1,7 @@
 """Tests for the model code: the Ratm builders, Threat, Mitigation and Report."""
 
+import inspect
+
 import pytest
 
 from ratm import CAPECInfo, Mitigation, Ratm, Report, Scenario, Threat, ThreatActor
@@ -39,7 +41,7 @@ def make_scenario(tm: Ratm) -> Scenario:
 
 
 def test_mitigation_to_dict_and_has_test() -> None:
-    mit = Mitigation("M1", title="T", test="t.py")
+    mit = Mitigation("M1", title="T", test="t.py", source=("model.py", 3))
     assert mit.has_test is True
     assert mit.to_dict() == {
         "id": "M1",
@@ -47,16 +49,18 @@ def test_mitigation_to_dict_and_has_test() -> None:
         "description": "",
         "status": "implemented",
         "test": "t.py",
+        "source": {"file": "model.py", "line": 3},
     }
     assert Mitigation("M2", title="T").has_test is False
 
 
 def test_threat_actor_to_dict() -> None:
-    assert ThreatActor("Any").to_dict() == {"name": "Any", "description": ""}
-    assert ThreatActor("Troll", description="Bored").to_dict() == {
-        "name": "Troll",
-        "description": "Bored",
+    assert ThreatActor("Any", source=("model.py", 7)).to_dict() == {
+        "name": "Any",
+        "description": "",
+        "source": {"file": "model.py", "line": 7},
     }
+    assert ThreatActor("Troll", description="Bored").to_dict()["description"] == "Bored"
 
 
 def test_ratm_registers_mitigations_and_actors(tm: Ratm) -> None:
@@ -239,3 +243,42 @@ def test_capec_likelihood_off_the_scale_is_unknown(tm: Ratm) -> None:
     threat = tm.Report([make_scenario(tm)]).generate()["threats"][0]
     assert threat["impact"] == "High"
     assert threat["likelihood"] == ""
+
+
+# -- Source locations
+
+
+def test_builders_record_repo_relative_source(tm: Ratm) -> None:
+    line = inspect.currentframe().f_lineno + 1
+    threat = tm.Threat("T-SRC", requirements=["reads_input"])
+    assert threat.source == ("tests/test_authoring.py", line)
+    line = inspect.currentframe().f_lineno + 1
+    comp = tm.Component(name="C-SRC", reads_input=True)
+    assert comp.source == ("tests/test_authoring.py", line)
+    # Registered in the fixture, in this file.
+    assert tm.mitigations["M-DOCS"].source[0] == "tests/test_authoring.py"
+    assert tm.threat_actors["Any"].source[0] == "tests/test_authoring.py"
+
+
+def test_source_is_the_model_code_that_called_a_helper(tm: Ratm) -> None:
+    def register(model):
+        return model.Threat("T-HELPER", requirements=["reads_input"])
+
+    threat = register(tm)
+    # The call inside the helper, not a line inside ratm.
+    assert threat.source[0] == "tests/test_authoring.py"
+    assert threat.source[1] == register.__code__.co_firstlineno + 1
+
+
+def test_report_emits_sources(tm: Ratm) -> None:
+    tm.Threat("T1", requirements=["reads_input"])
+    report = tm.Report([make_scenario(tm)]).generate()
+    threat = report["threats"][0]
+    assert threat["source"]["file"] == "tests/test_authoring.py"
+    assert isinstance(threat["source"]["line"], int)
+    assert (
+        report["mitigations"]["M-DOCS"]["source"]["file"] == "tests/test_authoring.py"
+    )
+    assert report["components"]["A"]["source"]["file"] == "tests/test_authoring.py"
+    scenario = report["scenarios"][0]
+    assert scenario["file"] == "tests/test_authoring.py" and scenario["line"]
