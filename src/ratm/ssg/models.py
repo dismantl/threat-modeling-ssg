@@ -18,7 +18,16 @@ class SiteConfig(BaseModel):
     title: str = "Threat Model Report"
     logo: str | None = None
     github_repo: str | None = None
+    # Branch that source links point at, under github_repo.
+    github_branch: str = "main"
     hide_components_with_category: list[str] = []
+
+
+class SourceRef(BaseModel):
+    """Where an item is defined in the model's repository."""
+
+    file: str
+    line: int | None = None
 
 
 class ThreatMapping(BaseModel):
@@ -42,6 +51,7 @@ class Mitigation(BaseModel):
     description: str = ""
     status: str = scales.DEFAULT_MITIGATION_STATUS
     test: str | None = None
+    source: SourceRef | None = None
 
     @property
     def has_test(self) -> bool:
@@ -51,6 +61,7 @@ class Mitigation(BaseModel):
 class ThreatActor(BaseModel):
     name: str
     description: str = ""
+    source: SourceRef | None = None
 
 
 class Threat(BaseModel):
@@ -70,6 +81,7 @@ class Threat(BaseModel):
     threat_actors: list[str] = []
     children: list[str] = []
     mapping: ThreatMapping = Field(default_factory=ThreatMapping)
+    source: SourceRef | None = None
 
     @property
     def impact_label(self) -> str:
@@ -154,6 +166,7 @@ class Component(BaseModel):
     description: str | None = ""
     inBoundary: str | None = Field(alias="in_boundary", default=None)
     properties: dict[str, Any] = {}
+    source: SourceRef | None = None
     _key: str | None = PrivateAttr(default=None)
 
     def get_property(self, name):
@@ -178,12 +191,17 @@ class Scenario(BaseModel):
     description: str = ""
     name: str
     file: str = ""
+    line: int | None = None
     findings: list[Finding] = []
     flows: list[Flow] = []
     components: list[str] = []
     dfd: str = ""
     mermaid: str = ""
     url: str | None = None
+
+    @property
+    def source(self) -> SourceRef | None:
+        return SourceRef(file=self.file, line=self.line) if self.file else None
 
     @property
     def linked_component_names(self) -> set:
@@ -229,6 +247,14 @@ def _token_satisfied(component: Component, token: str) -> bool:
     return bool(component.properties.get(token))
 
 
+def source_url(config: SiteConfig, source: SourceRef | None) -> str | None:
+    """Link to a definition in the repository, if the site knows the repository."""
+    if not (config.github_repo and source):
+        return None
+    anchor = f"#L{source.line}" if source.line else ""
+    return f"{config.github_repo}/blob/{config.github_branch}/{source.file}{anchor}"
+
+
 class ThreatModel(BaseModel):
     threats: dict[str, Threat]
     components: dict[str, Component]
@@ -271,7 +297,7 @@ class ThreatModel(BaseModel):
 
         for scenario in self.scenarios:
             if config.github_repo and scenario.file:
-                scenario.url = f"{config.github_repo}/blob/main/{scenario.file}"
+                scenario.url = source_url(config, scenario.source)
             scenario.dfd = generate_dataflow(scenario, self.components)
             scenario.mermaid = generate_sequence(scenario)
 
