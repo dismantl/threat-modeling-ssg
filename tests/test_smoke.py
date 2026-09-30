@@ -125,9 +125,20 @@ def test_threat_page_contents(tmp_path: Path) -> None:
         "threat_T-DEPS.html",
     ):
         assert needle in page, needle
-    # risk 9 (High x Medium) and residual 6 (High x Low)
-    assert '<div class="count-box__value">9</div>' in page
-    assert "after mitigations: 6" in page
+    # risk 9 (High x Medium) and residual 6 (High x Low), on the risk line
+    assert 'High impact × Medium likelihood = <span class="risk-value">9</span>' in page
+    assert 'High impact × Low likelihood = <span class="risk-value">6</span>' in page
+    # The risk line comes before the details, notes and matching rules.
+    order = [
+        page.index('class="risk-line"'),
+        page.index("<h2>Mitigations</h2>"),
+        page.index("<h2>Notes</h2>"),
+        page.index("How this threat is matched"),
+    ]
+    assert order == sorted(order)
+    assert "<h2>Comment</h2>" not in page and "<h2>Requirements</h2>" not in page
+    # Scenario diagrams start collapsed.
+    assert '<details class="scenario-details" open>' not in page
     child = (tmp_path / "threat_T-DEPS.html").read_text()
     assert "threat_T-INPUT.html" in child
 
