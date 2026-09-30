@@ -22,6 +22,18 @@ DEFAULT_THREAT_STATUS = "unmanaged"
 # Statuses that still need work. The site ranks and counts these as open risk.
 OPEN_STATUSES = ("unmanaged", "partially mitigated")
 
+# The order the site lists statuses in: most in need of attention first.
+THREAT_STATUS_ORDER = (
+    "unmanaged",
+    "partially mitigated",
+    "accepted",
+    "transferred",
+    "inform",
+    "avoided",
+    "mitigated",
+    "out of scope",
+)
+
 THREAT_STATUS_DESCRIPTIONS = {
     "unmanaged": "No decision has been made about this threat yet.",
     "accepted": "The team has decided to live with this risk.",
