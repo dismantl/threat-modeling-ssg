@@ -400,3 +400,16 @@ def test_source_shown_without_repository(tmp_path: Path) -> None:
     render(author_model(), tmp_path)
     page = (tmp_path / "threat_T-INPUT.html").read_text()
     assert "Defined in <code>tests/test_smoke.py:" in page
+
+
+def test_hidden_properties_stay_off_component_pages(tmp_path: Path) -> None:
+    report = author_model()
+    model = ThreatModel.model_validate(json.loads(json.dumps(report)))
+    config = SiteConfig(hide_properties=["loads_resources"])
+    model.prepare_scenarios(config)
+    render_views(build_env(), tmp_path, {"config": config, "model": model})
+    page = (tmp_path / "component_Web_app.html").read_text()
+    assert "loads resources" not in page
+    assert "reads input" in page
+    # Still listed for model authors.
+    assert "loads_resources" in (tmp_path / "component_properties.html").read_text()
