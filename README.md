@@ -95,4 +95,5 @@ file and line that defines it.
 | `github_repo` | repository URL; "Defined in" lines link into it |
 | `github_branch` | branch those links use (default `main`) |
 | `hide_components_with_category` | component classes to leave off the Components page, e.g. `["Actor"]` |
+| `hide_properties` | properties to leave off component pages, e.g. lookup keys; the component properties page still lists them |
 
