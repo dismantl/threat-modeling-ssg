@@ -26,13 +26,18 @@ into the site.
 **Properties** describe components (`tm.define_properties(...)`). A threat's
 `requirements` are expressions over them: `prop`, `!prop`, `prop.item`,
 `a == b`, `a != b`, and `x | y` when any of several alternatives will do, for
-example `element_ids.DFD1 | element_ids.DFD2`. A threat applies to a component
-when all of its requirements hold.
+example `element_ids.DFD1 | element_ids.DFD2`.
 
-**Threats** (`tm.Threat(id, requirements=[...], ...)`):
+A threat applies to the components it names in `components`, and to every
+component that meets all of its `requirements`. Naming a boundary covers every
+component inside it, at any depth. A threat needs at least one of the two.
+
+**Threats** (`tm.Threat(id, components=[...], requirements=[...], ...)`):
 
 | Field | Meaning |
 |---|---|
+| `components` | names of the components or boundaries the threat applies to |
+| `requirements` | property expressions; the threat also applies to every component meeting all of them |
 | `mitigations` | ids of the mitigations in place |
 | `further_mitigations` | ids of mitigations being considered |
 | `status` | `unmanaged`, `accepted`, `transferred`, `mitigated`, `avoided`, `inform`, `partially mitigated` or `out of scope`. The default is `unmanaged`. |
@@ -61,8 +66,8 @@ before a threat can name them.
 
 Generating the report fails with an error naming the problem when:
 
-- a threat names an unknown mitigation, threat actor or child threat, or lists
-  itself as a child
+- a threat names an unknown component, mitigation, threat actor or child
+  threat, lists itself as a child, or has neither components nor requirements
 - a status is not one of the values above
 - an impact or likelihood is given but is not on its scale
 - two threats, mitigations or threat actors share an id or name

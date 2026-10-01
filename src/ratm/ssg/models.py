@@ -38,6 +38,8 @@ class ThreatMapping(BaseModel):
     # Mitigation ids. Look them up in ThreatModel.mitigations.
     mitigations: list[str] = []
     further_mitigations: list[str] = []
+    # Components and boundaries the threat is listed for, by name.
+    components: list[str] = []
 
     @property
     def requirement_props(self) -> set[str]:
@@ -154,12 +156,6 @@ class Threat(BaseModel):
     @property
     def is_capec(self) -> bool:
         return self.SID.startswith("CAPEC-")
-
-    def applies_to(self, component: "Component") -> bool:
-        """True if the component has all the requirement properties for this threat."""
-        return bool(self.mapping.requirements) and all(
-            _token_satisfied(component, tok) for tok in self.mapping.requirements
-        )
 
 
 class Component(BaseModel):
