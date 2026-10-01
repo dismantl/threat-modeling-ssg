@@ -413,3 +413,23 @@ def test_hidden_properties_stay_off_component_pages(tmp_path: Path) -> None:
     assert "reads input" in page
     # Still listed for model authors.
     assert "loads_resources" in (tmp_path / "component_properties.html").read_text()
+
+
+def test_listed_components_show_on_threat_page_and_matrix(tmp_path: Path) -> None:
+    tm = Ratm(load_capec_info=False)
+    tm.define_properties("reads_input")
+    zone = tm.Boundary(name="Zone")
+    a = tm.Component(name="Alpha", boundary=zone)
+    b = tm.Component(name="Beta")
+    tm.Threat("T-LISTED", components=["Zone"], impact="High", likelihood="Low")
+    scenario = Scenario(name="S", description="d")
+    scenario.Dataflow(name="f", source=a, sink=b)
+    render(tm.Report([scenario]).generate(), tmp_path)
+    page = (tmp_path / "threat_T-LISTED.html").read_text()
+    assert '<a href="component_Zone.html" class="tag tag--text">Zone</a>' in page
+    assert "None specified." not in page
+    matrix = (tmp_path / "threats_components.html").read_text()
+    assert 'href="threat_T-LISTED.html"' in matrix
+    assert matrix.count('<td class="prop-cell status--') == 1
+    # The matching-rules grid renders a group with no property columns.
+    assert "T-LISTED" in (tmp_path / "threat_rules.html").read_text()
