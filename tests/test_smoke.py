@@ -268,7 +268,7 @@ def test_model_text_is_escaped(tmp_path: Path) -> None:
     for page_path in tmp_path.glob("*.html"):
         page = page_path.read_text()
         assert "<b>" not in page, page_path.name
-        # Double escaping, or macro output escaped as text.
+        # Text escaped twice, or HTML from a macro shown as literal text.
         for needle in ("&amp;amp;", "&amp;#34;", "&lt;span", "&lt;a "):
             assert needle not in page, (page_path.name, needle)
 
@@ -279,8 +279,8 @@ def test_model_text_is_escaped(tmp_path: Path) -> None:
     assert "label = &lt;&lt;i&gt;Net&lt;/i&gt;&gt;;" in page
     assert diagram_sources(page) == [scenario.dfd, scenario.mermaid]
     assert "label = <<i>Net</i>>;" in scenario.dfd
-    # The summary no longer embeds diagrams; the scenario index and threat
-    # pages still do.
+    # The summary page has no diagrams; the scenario index and threat pages
+    # do.
     for name in ("scenarios.html", "threat_T-INPUT.html"):
         sources = diagram_sources((tmp_path / name).read_text())
         assert sources, name
@@ -370,8 +370,9 @@ def test_guide_explains_statuses_and_scores(tmp_path: Path) -> None:
 def test_components_and_scenarios_show_open_risk(tmp_path: Path) -> None:
     render(author_model(), tmp_path)
     components = (tmp_path / "components.html").read_text()
-    # Web app and Worker both carry the open T-INPUT (residual 6); the property
-    # tick grid lives in the internals section now.
+    # Web app and Worker both carry the open T-INPUT (residual 6). The table of
+    # component properties is on its own page, linked from the internals page,
+    # not on the components page.
     assert 'href="component_Web_app.html"' in components
     assert "prop-table" not in components
     assert "prop-table" in (tmp_path / "component_properties.html").read_text()

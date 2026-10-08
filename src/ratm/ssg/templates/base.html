@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Threat Model{% endblock %}</title>
     <script>
-        // The theme comes from the link (?theme=, see below) or from storage.
+        // The theme comes from the link (?theme=, see below) or from localStorage.
         (function() {
             var t = new URLSearchParams(window.location.search).get('theme');
-            try { t = t || localStorage.getItem('theme'); } catch (e) { /* storage blocked */ }
+            try { t = t || localStorage.getItem('theme'); } catch (e) { /* localStorage blocked: keep the default theme */ }
             if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
         })();
     </script>
@@ -66,8 +66,9 @@
                 var svg = !a.hasAttribute('href') && a.hasAttributeNS(XLINK, 'href');
                 var href = svg ? a.getAttributeNS(XLINK, 'href') : a.getAttribute('href');
                 if (!href || href.charAt(0) === '#') return;
-                // Only links to other pages of this site. Tagged links are
-                // absolute, so compare where they resolve to, not their text.
+                // Only change links to other pages of this site. A link that
+                // was already changed holds a full file:// URL, so compare the
+                // URL it resolves to, not the href text.
                 var url = new URL(href, window.location.href);
                 if (url.protocol !== window.location.protocol || url.host !== window.location.host) return;
                 url.searchParams.set('theme', root.getAttribute('data-theme'));
@@ -91,7 +92,7 @@
             input.addEventListener('change', function() {
                 var theme = input.checked ? 'light' : 'dark';
                 root.setAttribute('data-theme', theme);
-                try { localStorage.setItem('theme', theme); } catch (e) { /* storage blocked */ }
+                try { localStorage.setItem('theme', theme); } catch (e) { /* localStorage blocked: keep the default theme */ }
                 if (fromDisk) {
                     tagLinks(document.body);
                     try {

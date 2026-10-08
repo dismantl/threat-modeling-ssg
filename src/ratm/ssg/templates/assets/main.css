@@ -55,10 +55,14 @@
     --color-count-blue-glow:  rgba( 84,  78, 104, 0.4);
     --color-count-teal-glow:  rgba( 32,  60,  86, 0.4);
     --color-count-grey-glow:  rgba( 13,  43,  69, 0.4);
-    /* Status colors, as background/text pairs that each reach at least 4.5:1.
-       Salience follows severity: unmanaged (open) is loudest, then partially
-       mitigated, then the managed statuses; mitigated/avoided (done) sits close
-       to the page background and out of scope (none) is an outline. */
+    /* Status colors, as background/text pairs. Each pair has a contrast ratio
+       of at least 4.5:1, the WCAG AA minimum for body text. The more a status
+       needs attention, the more it stands out: unmanaged is the strongest
+       color, then partially mitigated, then the other managed statuses.
+       Mitigated and avoided sit close to the page background, and out of scope
+       is only an outline. The variable names use short group names: open
+       (unmanaged), partial, managed, done (mitigated, avoided) and none (out
+       of scope). */
     --status-open-bg:         var(--color-5);
     --status-open-fg:         var(--color-1);
     --status-partial-bg:      var(--color-6);
@@ -997,7 +1001,8 @@ svg a {
 }
 
 /* A filled matrix cell means the threat applies to that component. The dot
-   takes the status text color, which reaches at least 4.5:1 on the cell. */
+   takes the status text color, which has at least 4.5:1 contrast with the
+   cell background. */
 td.prop-cell[class*="status--"] {
     background-color: var(--status-bg);
     color: var(--status-fg);

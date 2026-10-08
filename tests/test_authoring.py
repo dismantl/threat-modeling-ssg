@@ -1,13 +1,11 @@
 """Tests for the model code: the Ratm builders, Threat, Mitigation and Report."""
 
 import inspect
-import json
 
 import pytest
 
 from ratm import CAPECInfo, Mitigation, Ratm, Report, Scenario, Threat, ThreatActor
-from ratm.ssg.models import Component as SiteComponent
-from ratm.ssg.models import _token_props, _token_satisfied
+from ratm.ssg.models import _token_props
 
 
 @pytest.fixture()
@@ -182,7 +180,8 @@ def test_report_emits_entities_and_all_findings(tm: Ratm) -> None:
         "Well-resourced adversary"
     )
     targets = sorted(f["target"] for f in report["scenarios"][0]["findings"])
-    # A sanitizes its input but the finding is still reported.
+    # Component A has sanitizes_input, but the threat is still reported for
+    # it: mitigations don't remove findings.
     assert targets == ["A", "B"]
 
 
@@ -305,8 +304,7 @@ def test_report_emits_sources(tm: Ratm) -> None:
         ("reads_input == is_exposed | reads_input", True),
     ],
 )
-def test_any_of_requirements_agree_across_layers(token, expected) -> None:
-    """The model code decides findings, the site re-checks tokens: they must agree."""
+def test_any_of_requirements(token, expected) -> None:
     tm = Ratm(load_capec_info=False)
     tm.define_properties(
         "reads_input",
@@ -317,10 +315,6 @@ def test_any_of_requirements_agree_across_layers(token, expected) -> None:
     )
     comp = tm.Component(name="C", reads_input=True, loads_resources=("deps",))
     assert bool(comp.matches(token)) is expected
-    # Through JSON, as in a real report: tuples become lists.
-    properties = json.loads(json.dumps(comp.to_dict()["properties"]))
-    site_comp = SiteComponent(name="C", properties=properties)
-    assert _token_satisfied(site_comp, token) is expected
 
 
 def test_any_of_threat_applies_to_either_component() -> None:
@@ -344,7 +338,8 @@ def test_any_of_threat_applies_to_either_component() -> None:
 
 @pytest.fixture()
 def nested() -> Ratm:
-    """Outer boundary > inner boundary > component, plus a component outside."""
+    """A component inside an inner boundary inside an outer boundary, plus a
+    component outside both."""
     tm = Ratm(load_capec_info=False)
     tm.define_properties("reads_input")
     outer = tm.Boundary(name="Outer")

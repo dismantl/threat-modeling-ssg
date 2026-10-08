@@ -18,7 +18,7 @@ class SiteConfig(BaseModel):
     title: str = "Threat Model Report"
     logo: str | None = None
     github_repo: str | None = None
-    # Branch that source links point at, under github_repo.
+    # Branch used by "Defined in" links to files in github_repo.
     github_branch: str = "main"
     hide_components_with_category: list[str] = []
 
@@ -136,8 +136,8 @@ class Threat(BaseModel):
     def risk_order(self) -> tuple:
         """Sort key: highest residual risk first, then highest risk, then id.
 
-        Unknown scores sort after every known one. The id makes the order total,
-        so builds stay byte-identical.
+        Unknown scores sort after every known one. The id comes last so no two
+        threats tie, which keeps the order the same on every build.
         """
         unknown = 1
         return (
@@ -213,7 +213,7 @@ class Property(BaseModel):
 
 
 def _token_props(token: str) -> list[str]:
-    """The property names a requirement/mitigation token refers to."""
+    """The property names that one requirement refers to."""
     if "|" in token:
         names = [name for part in token.split("|") for name in _token_props(part)]
         return list(dict.fromkeys(names))
@@ -223,30 +223,6 @@ def _token_props(token: str) -> list[str]:
             left, right = token.split(operator, 1)
             return [left.strip(), right.strip()]
     return [token.removeprefix("!").split(".", 1)[0]]
-
-
-def _token_satisfied(component: Component, token: str) -> bool:
-    """Check if a single requirement/mitigation token is satisfied by the component.
-
-    Mirrors ComponentProperties.matches() on the report side: negation ('!is_exposed'),
-    comparison ('requires_credentials != uses_strong_credentials'), sub-resources
-    ('verifies_resources.deps'), plain truthiness ('is_physical') and any-of
-    ('element_ids.DFD1 | element_ids.DFD2'), which is split first."""
-    if "|" in token:
-        return any(_token_satisfied(component, part) for part in token.split("|"))
-    token = token.strip()
-    if token.startswith("!"):
-        return not _token_satisfied(component, token[1:])
-    for operator in ("!=", "=="):
-        if operator in token:
-            left, right = (part.strip() for part in token.split(operator, 1))
-            equal = component.properties.get(left) == component.properties.get(right)
-            return not equal if operator == "!=" else equal
-    if "." in token:
-        prop, item = token.split(".", 1)
-        value = component.properties.get(prop)
-        return item in value if isinstance(value, list) else bool(value)
-    return bool(component.properties.get(token))
 
 
 def source_url(config: SiteConfig, source: SourceRef | None) -> str | None:

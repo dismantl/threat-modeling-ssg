@@ -13,7 +13,9 @@ _PACKAGE_DIR = pathlib.Path(__file__).resolve().parent
 
 @functools.cache
 def _repo_root(directory: pathlib.Path) -> pathlib.Path | None:
-    """The nearest enclosing git checkout. A worktree's .git is a file."""
+    """The nearest directory at or above `directory` that contains .git.
+
+    Uses exists(), not is_dir(), because .git is a file in a git worktree."""
     for candidate in (directory, *directory.parents):
         if (candidate / ".git").exists():
             return candidate
@@ -25,8 +27,8 @@ def _caller_source() -> tuple[str, int] | None:
     so the generated report can show “Defined in demo/model.py:42” and link
     back to that line.
 
-    Walks out of ratm's own frames (and dataclass-generated __init__ code) to
-    the first frame in the caller's code. The path is relative to the git
+    Steps up the call stack, past ratm's own code and the __init__ code that
+    dataclasses generate, to the first caller outside ratm. The path is relative to the git
     checkout, or to the working directory, so no absolute path reaches the
     published site.
     """
@@ -113,7 +115,7 @@ class ComponentProperties:
         # "a | b" allows a component to match if it has either property
         if "|" in expr:
             return any(self.matches(part) for part in expr.split("|"))
-        
+
         expr = expr.strip()
         if expr.startswith("!"):
             # Check if the component property is missing, False, or empty list.
