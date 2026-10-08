@@ -542,7 +542,7 @@ class Scenario:
             # FIXME: Improve this dictionary
             "file": self.source[0] if self.source else "",
             "line": self.source[1] if self.source else None,
-            "description": self.description,
+            "description": self.description or "",
             "name": self.name,
             "flows": [f.to_dict() for f in self.dataflows],
             "findings": [dataclasses.asdict(f) for f in self.findings],
