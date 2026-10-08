@@ -11,7 +11,7 @@
 
 <div class="tag-list">
     {% if component.inBoundary %}<span class="tag tag--text">boundary: {{ component.inBoundary }}</span>{% endif %}
-    {% for key, value in component.properties | implemented if key not in config.hide_properties %}
+    {% for key, value in component.properties | implemented %}
     {% if value is sameas true %}
     <span class="tag tag--true">{{ key | replace('_', ' ') }}</span>
     {% else %}

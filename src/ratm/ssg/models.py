@@ -21,9 +21,6 @@ class SiteConfig(BaseModel):
     # Branch that source links point at, under github_repo.
     github_branch: str = "main"
     hide_components_with_category: list[str] = []
-    # Properties left off component pages, e.g. lookup keys that mean nothing
-    # to readers. The component properties page still lists them.
-    hide_properties: list[str] = []
 
 
 class SourceRef(BaseModel):
