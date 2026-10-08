@@ -46,7 +46,7 @@ class Report:
         return {actor.name: actor.to_dict() for actor in self.threat_actors}
 
     def validate(self):
-        """Check ids, names and labels. Raise ValueError on the first problem."""
+        """Check ids, names, and labels. Raise ValueError on the first problem."""
         threat_ids = _unique_ids("threat", [t.id for t in self.threats])
         mitigation_ids = _unique_ids("mitigation", [m.id for m in self.mitigations])
         actor_names = _unique_ids("threat actor", [a.name for a in self.threat_actors])

@@ -7,52 +7,28 @@ report JSON.
 
 import re
 
-THREAT_STATUSES = (
-    "unmanaged",
-    "accepted",
-    "transferred",
-    "mitigated",
-    "avoided",
-    "inform",
-    "partially mitigated",
-    "out of scope",
-)
+# Dictionary insertion order puts statuses most in need of attention first.
+THREAT_STATUSES = {
+    "unmanaged": "No decision has been made about this threat yet.",
+    "partially mitigated": "Some controls are in place, but the risk is still too high.",
+    "accepted": "The team has decided to live with this risk.",
+    "transferred": "Someone else handles this risk, such as an upstream project.",
+    "inform": "Handled by telling users how to protect themselves.",
+    "avoided": "The feature that caused the risk was left out or removed.",
+    "mitigated": "Controls in place bring the risk down to an acceptable level.",
+    "out of scope": "Outside what this threat model covers.",
+}
 DEFAULT_THREAT_STATUS = "unmanaged"
 
 # Statuses that still need work. The site ranks and counts these as open risk.
 OPEN_STATUSES = ("unmanaged", "partially mitigated")
 
-# The order the site lists statuses in: most in need of attention first.
-THREAT_STATUS_ORDER = (
-    "unmanaged",
-    "partially mitigated",
-    "accepted",
-    "transferred",
-    "inform",
-    "avoided",
-    "mitigated",
-    "out of scope",
-)
-
-THREAT_STATUS_DESCRIPTIONS = {
-    "unmanaged": "No decision has been made about this threat yet.",
-    "accepted": "The team has decided to live with this risk.",
-    "transferred": "Someone else handles this risk, such as an upstream project.",
-    "mitigated": "Controls in place bring the risk down to an acceptable level.",
-    "avoided": "The feature that caused the risk was left out or removed.",
-    "inform": "Handled by telling users how to protect themselves.",
-    "partially mitigated": "Some controls are in place, but the risk is still too high.",
-    "out of scope": "Outside what this threat model covers.",
-}
-
-MITIGATION_STATUSES = ("implemented", "optional", "proposed")
-DEFAULT_MITIGATION_STATUS = "implemented"
-
-MITIGATION_STATUS_DESCRIPTIONS = {
+MITIGATION_STATUSES = {
     "implemented": "In place.",
     "optional": "Available, but it has to be turned on or chosen.",
     "proposed": "Not in place yet. Being considered.",
 }
+DEFAULT_MITIGATION_STATUS = "implemented"
 
 IMPACT_SCORES = {"Low": 1, "Medium": 2, "High": 3}
 LIKELIHOOD_SCORES = {"Very Low": 1, "Low": 2, "Medium": 3, "High": 4}

@@ -59,12 +59,12 @@ def threats_view(
         "model": model,
         "rows": rows,
         "id_rank": id_rank,
-        "status_rank": {s: i for i, s in enumerate(scales.THREAT_STATUS_ORDER)},
+        "status_rank": {s: i for i, s in enumerate(scales.THREAT_STATUSES)},
         "impact_scores": scales.IMPACT_SCORES,
         "likelihood_scores": scales.LIKELIHOOD_SCORES,
         "statuses": [
             s
-            for s in scales.THREAT_STATUS_ORDER
+            for s in scales.THREAT_STATUSES
             if any(t.status == s for t in model.threats.values())
         ],
         "actors": sorted(
@@ -151,7 +151,7 @@ def threat_view(
             "threat": threat,
             "components": affected_components,
             "scenarios": scenario_names,
-            "status_descriptions": scales.THREAT_STATUS_DESCRIPTIONS,
+            "status_descriptions": scales.THREAT_STATUSES,
             "threat_scenario_data": threat_scenario_data,
             "mitigations": model.threat_mitigations(threat),
             "further_mitigations": model.threat_mitigations(threat, further=True),
@@ -467,7 +467,7 @@ def mitigation_view(
             "mitigation": mitigation,
             "threats": mitigating,
             "further_threats": proposing,
-            "status_descriptions": scales.MITIGATION_STATUS_DESCRIPTIONS,
+            "status_descriptions": scales.MITIGATION_STATUSES,
         }
 
 
@@ -526,13 +526,10 @@ def guide_view(
         "config": config,
         "model": model,
         "threat_statuses": [
-            (s, scales.THREAT_STATUS_DESCRIPTIONS[s], s in scales.OPEN_STATUSES)
-            for s in scales.THREAT_STATUS_ORDER
+            (s, description, s in scales.OPEN_STATUSES)
+            for s, description in scales.THREAT_STATUSES.items()
         ],
-        "mitigation_statuses": [
-            (s, scales.MITIGATION_STATUS_DESCRIPTIONS[s])
-            for s in scales.MITIGATION_STATUSES
-        ],
+        "mitigation_statuses": list(scales.MITIGATION_STATUSES.items()),
         "impacts": [(i, scales.IMPACT_SCORES[i]) for i in impacts],
         "likelihoods": [(lk, scales.LIKELIHOOD_SCORES[lk]) for lk in likelihoods],
         "risk_score": scales.risk_score,

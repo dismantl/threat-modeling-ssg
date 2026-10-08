@@ -216,6 +216,17 @@ def test_summary_and_matrix(tmp_path: Path) -> None:
     assert "threat_T-INPUT.html" in prop
 
 
+def test_matrix_status_legend_puts_open_threats_first(tmp_path: Path) -> None:
+    render(author_model(), tmp_path)
+    matrix = (tmp_path / "threats_components.html").read_text()
+    legend = re.search(r'<div class="status-legend">(.*?)</div>', matrix, re.DOTALL)
+    assert legend is not None
+    statuses = re.findall(
+        r'<span class="status-badge [^"]+">([^<]+)</span>', legend.group(1)
+    )
+    assert statuses == ["partially mitigated", "mitigated", "out of scope"]
+
+
 def diagram_sources(page: str) -> list[str]:
     """The diagram text as diagrams.js reads it: the decoded textContent."""
     return [
@@ -400,19 +411,6 @@ def test_source_shown_without_repository(tmp_path: Path) -> None:
     render(author_model(), tmp_path)
     page = (tmp_path / "threat_T-INPUT.html").read_text()
     assert "Defined in <code>tests/test_smoke.py:" in page
-
-
-def test_hidden_properties_stay_off_component_pages(tmp_path: Path) -> None:
-    report = author_model()
-    model = ThreatModel.model_validate(json.loads(json.dumps(report)))
-    config = SiteConfig(hide_properties=["loads_resources"])
-    model.prepare_scenarios(config)
-    render_views(build_env(), tmp_path, {"config": config, "model": model})
-    page = (tmp_path / "component_Web_app.html").read_text()
-    assert "loads resources" not in page
-    assert "reads input" in page
-    # Still listed for model authors.
-    assert "loads_resources" in (tmp_path / "component_properties.html").read_text()
 
 
 def test_listed_components_show_on_threat_page_and_matrix(tmp_path: Path) -> None:

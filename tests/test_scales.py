@@ -34,7 +34,7 @@ def test_statuses() -> None:
     assert "partially mitigated" in scales.THREAT_STATUSES
     assert "out of scope" in scales.THREAT_STATUSES
     assert scales.DEFAULT_MITIGATION_STATUS in scales.MITIGATION_STATUSES
-    assert scales.MITIGATION_STATUSES == ("implemented", "optional", "proposed")
+    assert tuple(scales.MITIGATION_STATUSES) == ("implemented", "optional", "proposed")
 
 
 @pytest.mark.parametrize(
@@ -59,9 +59,8 @@ def test_every_possible_score_has_a_band() -> None:
     assert all(scales.risk_band(s) for s in scores)
 
 
-def test_status_order_covers_every_status() -> None:
-    assert sorted(scales.THREAT_STATUS_ORDER) == sorted(scales.THREAT_STATUSES)
-    assert scales.THREAT_STATUS_ORDER[: len(scales.OPEN_STATUSES)] == (
+def test_open_statuses_come_first() -> None:
+    assert tuple(scales.THREAT_STATUSES)[: len(scales.OPEN_STATUSES)] == (
         scales.OPEN_STATUSES
     )
 
@@ -72,8 +71,8 @@ def test_open_statuses() -> None:
 
 
 def test_every_status_is_described() -> None:
-    assert set(scales.THREAT_STATUS_DESCRIPTIONS) == set(scales.THREAT_STATUSES)
-    assert set(scales.MITIGATION_STATUS_DESCRIPTIONS) == set(scales.MITIGATION_STATUSES)
+    assert all(scales.THREAT_STATUSES.values())
+    assert all(scales.MITIGATION_STATUSES.values())
 
 
 @pytest.mark.parametrize(

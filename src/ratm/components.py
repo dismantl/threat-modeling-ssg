@@ -21,7 +21,9 @@ def _repo_root(directory: pathlib.Path) -> pathlib.Path | None:
 
 
 def _caller_source() -> tuple[str, int] | None:
-    """Where the model code that is creating an object lives, as (path, line).
+    """Where the model code that is creating an object lives, as (path, line),
+    so the generated report can show “Defined in demo/model.py:42” and link
+    back to that line.
 
     Walks out of ratm's own frames (and dataclass-generated __init__ code) to
     the first frame in the caller's code. The path is relative to the git
@@ -108,10 +110,10 @@ class ComponentProperties:
         return getattr(self, prop_left.strip()) == getattr(self, prop_right.strip())
 
     def matches(self, expr: str):
-        # "a | b" holds when any alternative does. Split on "|" before anything
-        # else, so each alternative can use the other operators.
+        # "a | b" allows a component to match if it has either property
         if "|" in expr:
             return any(self.matches(part) for part in expr.split("|"))
+        
         expr = expr.strip()
         if expr.startswith("!"):
             # Check if the component property is missing, False, or empty list.
@@ -362,7 +364,7 @@ class ThreatActor:
 
 @dataclass
 class Threat:
-    """The requirements, mitigations and risk information for a threat.
+    """The requirements, mitigations, and risk information for a threat.
 
     A threat applies to the components named in `components` (a boundary
     covers everything inside it, at any depth) and to every component whose

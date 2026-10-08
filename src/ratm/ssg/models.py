@@ -73,7 +73,7 @@ class Threat(BaseModel):
     description: str = ""
     details: str = ""
     example: str = ""
-    # Older reports and CAPEC call this field `severity`. Both names are accepted.
+    # CAPEC calls this field `severity`. Both names are accepted.
     impact: str = Field(default="", validation_alias=AliasChoices("impact", "severity"))
     likelihood: str = ""
     residual_impact: str = ""
@@ -344,7 +344,7 @@ class ThreatModel(BaseModel):
         status_counter = Counter(t.status for t in self.threats.values())
         status_distribution = {
             status: status_counter[status]
-            for status in scales.THREAT_STATUS_ORDER
+            for status in scales.THREAT_STATUSES
             if status_counter[status]
         }
 
