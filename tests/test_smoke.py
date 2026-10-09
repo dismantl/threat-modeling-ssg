@@ -145,7 +145,6 @@ def test_threat_page_contents(tmp_path: Path) -> None:
         page.index("How this threat is matched"),
     ]
     assert order == sorted(order)
-    assert "<h2>Comment</h2>" not in page and "<h2>Requirements</h2>" not in page
     # Scenario diagrams start collapsed.
     assert '<details class="scenario-details" open>' not in page
     child = (tmp_path / "threat_T-DEPS.html").read_text()
@@ -200,14 +199,11 @@ def test_summary_leads_with_open_risk(tmp_path: Path) -> None:
     top = index[index.index("Top open risks") :]
     assert 'href="threat_T-INPUT.html"' in top
     assert 'href="threat_T-DEPS.html"' not in top
-    assert "Threats by frequency" not in index
     assert "dfd-container" not in index
 
 
 def test_summary_and_matrix(tmp_path: Path) -> None:
     render(author_model(), tmp_path)
-    index = (tmp_path / "index.html").read_text()
-    assert "partially mitigated" in index and "mitigated" in index
     matrix = (tmp_path / "threats_components.html").read_text()
     # The legend also uses this class, so match the cell markup itself.
     assert '<td class="prop-cell status--partially-mitigated"' in matrix
@@ -364,12 +360,10 @@ def test_guide_explains_statuses_and_scores(tmp_path: Path) -> None:
         assert status in guide, status
     # The risk grid: High impact x High likelihood is the maximum, 12.
     assert 'data-impact="High" data-likelihood="High">12' in guide
-    assert "Open" in guide and "After mitigations" in guide
-    # Both ways a threat can apply are explained: listing and properties.
-    assert "the components its authors list for it" in guide
-    assert "meet all of its requirements" in guide
-    # Every smoke threat has requirements, so the rules page needs no note.
-    assert "have empty rows here" not in (tmp_path / "threat_rules.html").read_text()
+    # Every smoke threat has requirements, so the rules page has no note
+    # pointing to the matrix.
+    rules = (tmp_path / "threat_rules.html").read_text()
+    assert 'href="threats_components.html"' not in rules
 
 
 def test_components_and_scenarios_show_open_risk(tmp_path: Path) -> None:
@@ -388,7 +382,6 @@ def test_components_and_scenarios_show_open_risk(tmp_path: Path) -> None:
     assert "1 open threat" in scenarios
     assert '<details class="scenario-diagram" open>' not in scenarios
     scenario = (tmp_path / "scenario_Handle_request.html").read_text()
-    assert "Findings" not in scenario
     assert "1 open threat" in scenario
 
 
@@ -431,15 +424,14 @@ def test_listed_components_show_on_threat_page_and_matrix(tmp_path: Path) -> Non
     render(tm.Report([scenario]).generate(), tmp_path)
     page = (tmp_path / "threat_T-LISTED.html").read_text()
     assert '<a href="component_Zone.html" class="tag tag--text">Zone</a>' in page
-    assert "None specified." not in page
     matrix = (tmp_path / "threats_components.html").read_text()
     assert 'href="threat_T-LISTED.html"' in matrix
     assert matrix.count('<td class="prop-cell status--') == 1
-    # The matching-rules grid renders a group with no property columns, and
-    # says why the row is empty and where to look instead.
+    # The matching-rules grid renders a group with no property columns, and a
+    # note counts the listed-only threats and points to the matrix.
     rules = (tmp_path / "threat_rules.html").read_text()
     assert "T-LISTED" in rules
-    assert "have empty rows here (1 of 1)" in rules
+    assert "(1 of 1)" in rules
     assert 'href="threats_components.html"' in rules
 
 

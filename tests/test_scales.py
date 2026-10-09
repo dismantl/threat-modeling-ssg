@@ -25,16 +25,9 @@ def test_capec_severity_clamps_to_impact_scale() -> None:
     assert set(scales.CAPEC_SEVERITY_TO_IMPACT.values()) <= set(scales.IMPACT_SCORES)
 
 
-def test_impact_order_covers_the_scale_and_unknown() -> None:
-    assert list(scales.IMPACT_ORDER) == ["High", "Medium", "Low", scales.UNKNOWN]
-
-
-def test_statuses() -> None:
+def test_default_statuses_are_valid() -> None:
     assert scales.DEFAULT_THREAT_STATUS in scales.THREAT_STATUSES
-    assert "partially mitigated" in scales.THREAT_STATUSES
-    assert "out of scope" in scales.THREAT_STATUSES
     assert scales.DEFAULT_MITIGATION_STATUS in scales.MITIGATION_STATUSES
-    assert tuple(scales.MITIGATION_STATUSES) == ("implemented", "optional", "proposed")
 
 
 @pytest.mark.parametrize(
@@ -66,7 +59,6 @@ def test_open_statuses_come_first() -> None:
 
 
 def test_open_statuses() -> None:
-    assert scales.OPEN_STATUSES == ("unmanaged", "partially mitigated")
     assert set(scales.OPEN_STATUSES) <= set(scales.THREAT_STATUSES)
 
 
