@@ -122,14 +122,6 @@ class Threat(BaseModel):
         )
 
     @property
-    def risk_band(self) -> str | None:
-        return scales.risk_band(self.risk_score)
-
-    @property
-    def residual_risk_band(self) -> str | None:
-        return scales.risk_band(self.residual_risk_score)
-
-    @property
     def is_open(self) -> bool:
         """True while the threat still needs work (see scales.OPEN_STATUSES)."""
         return self.status in scales.OPEN_STATUSES
@@ -359,13 +351,6 @@ class ThreatModel(BaseModel):
                     if scenario.name not in threats_to_scenarios[tid]:
                         threats_to_scenarios[tid].append(scenario.name)
 
-        active = [self.threats[tid] for tid in threat_counter if tid in self.threats]
-        impact_counter = Counter(t.impact_label for t in active)
-        impact_distribution = {
-            label: impact_counter[label]
-            for label in scales.IMPACT_ORDER
-            if impact_counter[label]
-        }
         # Every defined threat, so each count matches the register filtered to
         # that status.
         status_counter = Counter(t.status for t in self.threats.values())
@@ -384,12 +369,10 @@ class ThreatModel(BaseModel):
 
         self._analysis = {
             "threat_counter": threat_counter,
-            "threats_by_frequency": threat_counter.most_common(),
             "threats_to_components": dict(threats_to_components),
             "threats_to_scenarios": dict(threats_to_scenarios),
             "components_to_threats": dict(components_to_threats),
             "components_to_scenarios": dict(components_to_scenarios),
-            "impact_distribution": impact_distribution,
             "status_distribution": status_distribution,
             "actors_to_threats": dict(actors_to_threats),
         }
