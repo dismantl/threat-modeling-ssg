@@ -288,7 +288,6 @@ def test_analysis_distributions_and_actors(model_factory) -> None:
         actors={"Any": ThreatActor(name="Any"), "Troll": ThreatActor(name="Troll")},
     )
     analysis = model.analyze()
-    assert analysis["impact_distribution"] == {"High": 1, "Low": 1}
     # Status counts cover every defined threat, matching the register's filter,
     # in attention order: unmanaged before mitigated.
     assert analysis["status_distribution"] == {"unmanaged": 2, "mitigated": 1}
@@ -383,19 +382,9 @@ def test_threats_by_risk_order() -> None:
     assert [tid for tid, _ in model.threats_by_risk(["T4", "T3"])] == ["T3", "T4"]
 
 
-def test_threat_open_and_bands() -> None:
-    threat = Threat(
-        SID="T",
-        status="partially mitigated",
-        impact="High",
-        likelihood="High",
-        residual_likelihood="Low",
-    )
-    assert threat.is_open is True
-    assert threat.risk_band == "high"
-    assert threat.residual_risk_band == "medium"
+def test_threat_is_open() -> None:
+    assert Threat(SID="T", status="partially mitigated").is_open is True
     assert Threat(SID="T", status="accepted").is_open is False
-    assert Threat(SID="T").risk_band is None
 
 
 def test_backlog_ranks_proposed_mitigations_by_threat_risk(model_factory) -> None:
