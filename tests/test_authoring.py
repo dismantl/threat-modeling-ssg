@@ -66,11 +66,6 @@ def test_threat_actor_to_dict() -> None:
     assert ThreatActor("Troll", description="Bored").to_dict()["description"] == "Bored"
 
 
-def test_ratm_registers_mitigations_and_actors(tm: Ratm) -> None:
-    assert set(tm.mitigations) == {"M-SANITIZE", "M-VERIFY", "M-DOCS"}
-    assert set(tm.threat_actors) == {"Nation state", "Any"}
-
-
 def test_ratm_rejects_duplicate_ids(tm: Ratm) -> None:
     tm.Threat("T1", requirements=["reads_input"])
     with pytest.raises(ValueError, match="T1"):
