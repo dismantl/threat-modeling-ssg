@@ -7,7 +7,7 @@
 <h1>Scenarios</h1>
 
 {% for scenario in model.scenarios %}
-{% set slug = scenario.name.replace(' ', '_') %}
+{% set slug = scenario.name | slugify %}
 {% set summary = summaries[scenario.name] %}
 <section class="scenario-list-item">
     <h2>

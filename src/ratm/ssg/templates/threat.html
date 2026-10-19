@@ -108,7 +108,7 @@
 {% for item in threat_scenario_data %}
 <details class="scenario-details">
     <summary>
-        <a href="scenario_{{ item.scenario.name.replace(' ', '_') }}.html">{{ item.scenario.name }}</a>{{ m.tag_badges(item.scenario.tags) }}
+        <a href="scenario_{{ item.scenario.name | slugify }}.html">{{ item.scenario.name }}</a>{{ m.tag_badges(item.scenario.tags) }}
         <span class="affected-components-inline">
             · {{ item.affected_components | join(", ") }}
         </span>

@@ -490,6 +490,34 @@ def test_tags_show_as_badges_and_dashed_nodes(tmp_path: Path) -> None:
     assert "filled,dashed" in page and "tagged highlighted" in page
 
 
+def test_scenario_names_with_punctuation_get_portable_page_names(
+    tmp_path: Path,
+) -> None:
+    # A colon and similar characters are not allowed in file names on some
+    # file systems, and actions/upload-artifact rejects them.
+    tm = Ratm(load_capec_info=False)
+    tm.define_properties("reads_input")
+    tm.Threat("T1", requirements=["reads_input"])
+    box = tm.Component(name="Box", reads_input=True)
+    other = tm.Component(name="Other")
+    scenario = Scenario(name='Workstation: boot & "updates"?', description="d")
+    scenario.Dataflow(name="Flow", source=other, sink=box)
+    render(tm.Report([scenario]).generate(), tmp_path)
+
+    page = "scenario_Workstation__boot____updates__.html"
+    assert (tmp_path / page).is_file()
+    for path in tmp_path.rglob("*"):
+        assert not set(path.name) & set('"<>|*?:'), path.name
+    link = f'href="{page}"'
+    for linking in (
+        "index.html",
+        "scenarios.html",
+        "component_Box.html",
+        "threat_T1.html",
+    ):
+        assert link in (tmp_path / linking).read_text(), linking
+
+
 def test_requirement_links_point_to_existing_property_pages(tmp_path: Path) -> None:
     tm = Ratm(load_capec_info=False)
     tm.define_properties("reads_input", "is_exposed", "uses_strong_credentials")

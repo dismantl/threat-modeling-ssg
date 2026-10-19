@@ -344,7 +344,7 @@ def scenario_view(
             "scenario": scenario,
             "summary": model.open_risk(f.threat_id for f in scenario.findings),
             "findings": findings,
-            "scenario_name": scenario.name.replace(" ", "_"),
+            "scenario_name": slugify(scenario.name),
         }
 
 
