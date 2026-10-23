@@ -32,10 +32,6 @@
 
 {% if mitigation.description %}<p>{{ mitigation.description }}</p>{% endif %}
 
-<div class="tag-list">
-    {% if mitigation.test %}<span class="tag tag--text">automated test: <code>{{ mitigation.test }}</code></span>{% endif %}
-</div>
-
 {% if mitigation.verification or mitigation.tests %}
 <h2 id="verification">Verification</h2>
 {% if mitigation.verification %}

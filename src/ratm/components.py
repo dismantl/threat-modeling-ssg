@@ -342,7 +342,6 @@ class Mitigation:
     title: str
     description: str = None
     status: str = scales.DEFAULT_MITIGATION_STATUS
-    test: str = None
     # One of scales.VERIFICATION_METHODS, or None until someone classifies it.
     verification: str = None
     tests: list[TestRef] = dataclasses.field(default_factory=list)
@@ -359,7 +358,7 @@ class Mitigation:
 
     @property
     def has_test(self):
-        return bool(self.test or self.tests)
+        return bool(self.tests)
 
     def to_dict(self):
         return {
@@ -367,7 +366,6 @@ class Mitigation:
             "title": self.title,
             "description": self.description or "",
             "status": self.status,
-            "test": self.test,
             "verification": self.verification,
             "tests": [ref.to_dict() for ref in self.tests],
             "source": _source_dict(self.source),

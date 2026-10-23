@@ -65,7 +65,6 @@ class Mitigation(BaseModel):
     title: str = ""
     description: str = ""
     status: str = scales.DEFAULT_MITIGATION_STATUS
-    test: str | None = None
     verification: str | None = None
     tests: list[TestRef] = []
     source: SourceRef | None = None
@@ -73,7 +72,7 @@ class Mitigation(BaseModel):
 
     @property
     def has_test(self) -> bool:
-        return bool(self.test or self.tests)
+        return bool(self.tests)
 
     @property
     def counts_for_coverage(self) -> bool:

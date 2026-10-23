@@ -33,7 +33,6 @@ def author_model() -> dict:
     tm.Mitigation(
         "M-SANITIZE",
         title="Sanitize input",
-        test="tests/test_input.py",
         verification="test",
         tests=[
             {
@@ -313,7 +312,6 @@ def test_model_text_is_escaped(tmp_path: Path) -> None:
     threat = next(t for t in report["threats"] if t["SID"] == "T-INPUT")
     threat["description"] = tricky
     report["mitigations"]["M-SANITIZE"]["title"] = tricky
-    report["mitigations"]["M-SANITIZE"]["test"] = 'tests/"a" <b>&</b>.py'
     report["mitigations"]["M-SANITIZE"]["tests"][0]["name"] = tricky
     report["mitigations"]["M-SANITIZE"]["tests"][0]["url"] = (
         'https://example.com/"><b>x</b>'
@@ -335,7 +333,7 @@ def test_model_text_is_escaped(tmp_path: Path) -> None:
     assert link in (tmp_path / "component_Web_app.html").read_text()
     assert link in (tmp_path / "scenario_Handle_request.html").read_text()
     mitigation_page = (tmp_path / "mitigation_M-SANITIZE.html").read_text()
-    assert 'title="tests/&#34;a&#34; &lt;b&gt;&amp;&lt;/b&gt;.py"' in mitigation_page
+    assert f'title="{escaped}, test_waf"' in mitigation_page
     assert f"<code>{escaped}</code>" in mitigation_page
     assert 'href="https://example.com/&#34;&gt;&lt;b&gt;x&lt;/b&gt;"' in (
         mitigation_page

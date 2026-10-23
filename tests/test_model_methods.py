@@ -343,12 +343,17 @@ def test_old_capec_severity_maps_onto_impact() -> None:
     assert Threat(SID="T", impact="Very High", likelihood="Low").risk_score == 6
 
 
-def test_mitigation_has_test_and_ignores_old_property_key() -> None:
+def test_mitigation_has_test_and_ignores_old_keys() -> None:
     assert DOCS.has_test is False
-    assert Mitigation(id="M", title="t", test="tests/x.py").has_test is True
-    # Reports written while mitigations could name a property still load.
-    old = Mitigation.model_validate({"id": "M", "title": "t", "property": "x"})
-    assert not hasattr(old, "property")
+    ref = TestRef(repo="org/app", path="tests/x.py", name="test_x")
+    assert Mitigation(id="M", title="t", tests=[ref]).has_test is True
+    # Reports written while mitigations could name a property, or a single
+    # test, still load.
+    old = Mitigation.model_validate(
+        {"id": "M", "title": "t", "property": "x", "test": "tests/x.py"}
+    )
+    assert not hasattr(old, "property") and not hasattr(old, "test")
+    assert old.has_test is False
 
 
 def test_test_coverage(model_factory) -> None:

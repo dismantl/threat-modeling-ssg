@@ -38,8 +38,7 @@ tm.define_properties(
 # -- Mitigations
 #
 # Each mitigation is its own object with an id, a title and a status:
-# "implemented", "optional" or "proposed". `test` optionally names the
-# automated test that checks the mitigation.
+# "implemented", "optional" or "proposed".
 #
 # `verification` says how the mitigation is shown to work: "test",
 # "inspection", "analysis" or "demonstration". `tests` lists the automated
@@ -53,7 +52,6 @@ tm.Mitigation(
     "MIT-VERIFY-DEPS",
     title="Pin and hash-check dependencies",
     description="Lockfiles with hashes make the registry unable to swap a package.",
-    test="tests/test_lockfile.py::test_hashes_pinned",
     verification="test",
     tests=[
         TestRef(

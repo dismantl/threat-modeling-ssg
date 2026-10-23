@@ -31,7 +31,7 @@ def tm() -> Ratm:
     tm.Mitigation(
         "M-VERIFY",
         title="Verify resources",
-        test="tests/test_deps.py",
+        tests=[{"repo": "org/app", "path": "tests/test_deps.py", "name": "test_d"}],
         status="proposed",
     )
     tm.Mitigation("M-DOCS", title="Document the risk", status="optional")
@@ -52,20 +52,19 @@ def make_scenario(tm: Ratm) -> Scenario:
 
 
 def test_mitigation_to_dict_and_has_test() -> None:
-    mit = Mitigation("M1", title="T", test="t.py", source=("model.py", 3))
-    assert mit.has_test is True
+    mit = Mitigation("M1", title="T", source=("model.py", 3))
+    assert mit.has_test is False
     assert mit.to_dict() == {
         "id": "M1",
         "title": "T",
         "description": "",
         "status": "implemented",
-        "test": "t.py",
         "verification": None,
         "tests": [],
         "source": {"file": "model.py", "line": 3},
         "tags": [],
     }
-    assert Mitigation("M2", title="T").has_test is False
+    assert Mitigation("M2", title="T", tests=[REF]).has_test is True
 
 
 REF = {
@@ -217,7 +216,9 @@ def test_report_emits_entities_and_all_findings(tm: Ratm) -> None:
         "mitigations",
         "threat_actors",
     }
-    assert report["mitigations"]["M-VERIFY"]["test"] == "tests/test_deps.py"
+    assert report["mitigations"]["M-VERIFY"]["tests"][0]["path"] == (
+        "tests/test_deps.py"
+    )
     assert report["threat_actors"]["Nation state"]["description"] == (
         "Well-resourced adversary"
     )

@@ -55,10 +55,9 @@ partially mitigated threats count as open. Mitigations never remove a threat
 from the report: it is listed for every component that matches its
 requirements.
 
-**Mitigations** (`tm.Mitigation(id, title=..., ...)`) have a `description`, a
-`status` (`implemented`, `optional` or `proposed`) and a `test` naming the
-automated test that checks the mitigation. When a control is a component
-property, put it in the threat's requirements instead, for example
+**Mitigations** (`tm.Mitigation(id, title=..., ...)`) have a `description` and
+a `status` (`implemented`, `optional` or `proposed`). When a control is a
+component property, put it in the threat's requirements instead, for example
 `!encrypts_secrets`, so the threat applies only to components without it.
 
 A mitigation's `verification` says how it is shown to work: `test`,
