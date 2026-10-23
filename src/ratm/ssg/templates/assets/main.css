@@ -264,6 +264,8 @@ nav {
     a {
         margin-right: 15px;
         font-weight: 500;
+        /* Keep two-word labels such as "Threat Actors" in one pill. */
+        white-space: nowrap;
         padding: 6px 12px;
         border-radius: 4px;
         background-color: var(--color-bg-header);

@@ -61,6 +61,34 @@ automated test that checks the mitigation. When a control is a component
 property, put it in the threat's requirements instead, for example
 `!encrypts_secrets`, so the threat applies only to components without it.
 
+A mitigation's `verification` says how it is shown to work: `test`,
+`inspection`, `analysis` or `demonstration`. Leave it unset until someone has
+classified the mitigation. `tests` lists the automated tests that check it, as
+`TestRef(repo=..., path=..., name=..., line=..., url=...)` objects or dicts with
+the same keys (`line` and `url` are optional):
+
+```python
+tm.Mitigation(
+    "MIT-NO-SWAP",
+    title="Swap is disabled",
+    verification="test",
+    tests=[
+        TestRef(
+            repo="example/server",
+            path="tests/test_swap.py",
+            name="test_swap_disabled",
+            line=12,
+            url="https://github.com/example/server/blob/<commit>/tests/test_swap.py#L12",
+        )
+    ],
+)
+```
+
+ratm does not look for tests itself. The model script passes in what a scan of
+the code repositories found, either when it registers a mitigation or later,
+through `tm.mitigations[id].tests`. ratm counts every reference it is given, so
+leave out tests that are skipped or expected to fail.
+
 **Threat actors** (`tm.ThreatActor(name, description=...)`) must be registered
 before a threat can name them.
 
@@ -80,6 +108,9 @@ Generating the report fails with an error naming the problem when:
 - an impact or likelihood is given but is not on its scale
 - two threats, mitigations or threat actors share an id or name
 - `tags` is not a list of non-empty strings
+- a `verification` is not one of the values above
+- a test reference has an empty `repo`, `path` or `name`, a `line` that is not
+  a positive integer, or a `url` that is not an `http://` or `https://` URL
 
 ## The generated site
 
@@ -89,6 +120,11 @@ Generating the report fails with an error naming the problem when:
   first, with sorting and filters by status, threat actor and text. Filters can
   be preset in the link, for example `threats.html?status=open`.
 - **Backlog**: proposed mitigations, ranked by the risk they would reduce.
+- **Test Coverage**: implemented mitigations verified by test, which of them
+  have at least one test, and the ratio. It also says how many implemented
+  mitigations are verified some other way or not classified yet, and lists
+  mitigations that have tests but are not counted. Mitigation pages list their
+  tests.
 - **Scenarios**, **Mitigations**, **Threat Actors** and **Components**, each
   listing threats highest risk first.
 - **How to read this model** explains the statuses and scores.
